@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { Toaster, toast } from 'react-hot-toast';
 
 const contactSlice = createSlice({
   // Ім'я слайсу
