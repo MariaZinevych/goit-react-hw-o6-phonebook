@@ -1,47 +1,73 @@
-import { Formik, Field } from 'formik';
-import { Container, StyledError } from './name.styled';
-import * as Yup from 'yup';
 import { nanoid } from 'nanoid';
+import { useDispatch, useSelector } from 'react-redux';
+import { getContacts } from 'redux/selector';
+import { addContacts } from 'redux/contactSlice';
+import { useState } from 'react';
 
-const SignupSchema = Yup.object().shape({
-  name: Yup.string()
-    .min(2, 'Too Short!')
-    .max(50, 'Too Long!')
-    .required('Required'),
-  number: Yup.number().min(2, 'Too Short!').required('Required'),
-});
+export const Phonebook = () => {
+  const [name, setName] = useState('');
+  const [number, setNumber] = useState('');
 
-export const Phonebook = ({ onAdd }) => {
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
+
+  const handleSubmit = event => {
+    event.preventDefault();
+
+    const isInContacts = contacts.some(
+      contact => contact.name.toLowerCase().trim() === name.toLowerCase().trim()
+    );
+
+    if (isInContacts) {
+      alert(`${name} is already in contacts`);
+      return;
+    }
+
+    dispatch(
+      addContacts({
+        name: name,
+        number,
+        id: nanoid(),
+      })
+    );
+
+    setName('');
+    setNumber('');
+  };
+  const handleChange = event => {
+    const { name, value } = event.target;
+
+    switch (name) {
+      case 'name':
+        setName(value);
+        break;
+      case 'number':
+        setNumber(value);
+        break;
+      default:
+        return;
+    }
+  };
   return (
     <>
-      <Formik
-        initialValues={{
-          name: '',
-          number: '',
-        }}
-        validationSchema={SignupSchema}
-        onSubmit={(values, actions) => {
-          onAdd({ ...values, id: nanoid() });
-          console.log('values', values);
-          actions.resetForm();
-        }}
-      >
-        <Container>
-          <label htmlFor="firstName">
-            Name
-            <Field name="name" />
-            <StyledError name="name" />
-          </label>
+      <form onSubmit={handleSubmit}>
+        <label>
+          Name
+          <input type="text" name="name" value={name} onChange={handleChange} />
+        </label>
 
-          <label htmlFor="email">
-            Number
-            <Field name="number" type="tel" />
-            <StyledError name="number" />
-          </label>
+        <label>
+          Number
+          <input
+            type="tel"
+            name="number"
+            value={number}
+            onChange={handleChange}
+          />
+        </label>
 
-          <button type="submit">Add contact</button>
-        </Container>
-      </Formik>
+        <button type="submit">Add contact</button>
+      </form>
     </>
   );
 };
